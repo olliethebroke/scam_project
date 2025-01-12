@@ -1,0 +1,49 @@
+version: '3'
+
+volumes:
+  postgres_volume:
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    platform: ${PLATFORM}
+    ports:
+      - "${HTTP_PORT}:${HTTP_PORT}"
+    environment:
+      CONFIG_PATH: ${ENV_FILE}
+    depends_on:
+      - pg
+    networks:
+      - server
+  pg:
+    build:
+      context: .
+      dockerfile: postgres.Dockerfile
+    platform: ${PLATFORM}
+    environment:
+      - "POSTGRES_DB=${PG_NAME}"
+      - "POSTGRES_USER=${PG_USER}"
+      - "POSTGRES_PASSWORD=${PG_PASSWORD}"
+    ports:
+      - "${PG_PORT}:5432"
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+    networks:
+      - server
+  migrator:
+    build:
+      context: .
+      dockerfile: migrator.Dockerfile
+      args:
+        ENV_FILE: ${ENV_FILE}
+    platform: ${PLATFORM}
+    restart: on-failure
+    environment:
+      DB_HOST: pg
+    networks:
+      - server
+
+networks:
+  server:
+    driver: bridge
