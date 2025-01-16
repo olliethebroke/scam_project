@@ -7,7 +7,10 @@ services:
     build:
       context: .
       dockerfile: server.Dockerfile
+      args:
+        ENV_FILE: ${ENV_FILE}
     platform: ${PLATFORM}
+    image: cr.selcloud.ru/scam/scam-server:latest
     ports:
       - "${HTTP_PORT}:${HTTP_PORT}"
     environment:
@@ -21,6 +24,7 @@ services:
       context: .
       dockerfile: postgres.Dockerfile
     platform: ${PLATFORM}
+    image: cr.selcloud.ru/scam/scam-postgres:latest
     environment:
       - "POSTGRES_DB=${PG_NAME}"
       - "POSTGRES_USER=${PG_USER}"
@@ -38,12 +42,12 @@ services:
       args:
         ENV_FILE: ${ENV_FILE}
     platform: ${PLATFORM}
+    image: cr.selcloud.ru/scam/scam-migrator:latest
     restart: on-failure
-    environment:
-      DB_HOST: pg
+    depends_on:
+      - pg
     networks:
       - server
-
 networks:
   server:
     driver: bridge

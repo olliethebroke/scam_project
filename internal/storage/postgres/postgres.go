@@ -54,6 +54,7 @@ func Connect(dsn string) error {
 // InsertUser записывает пользователя в бд
 func InsertUser(id int64, username string) (*UserInfo, error) {
 	isPremium := true
+	// проверяем, есть ли пользователь в приватке
 	if err := telegram.IfChatMember(int(id)); err != nil {
 		isPremium = false
 	}
@@ -88,7 +89,7 @@ func InsertUser(id int64, username string) (*UserInfo, error) {
 // SelectUser считывает данные о пользователе из бд
 func SelectUser(id int64) (*UserInfo, error) {
 	// создаём sql запрос
-	query, args, err := sq.Select("id", "username", "blocks", "record", "last_checkin", "days_streak", "invited_friends", "is_premium", "league").
+	query, args, err := sq.Select("id", "username", "blocks", "record", "days_streak", "invited_friends", "is_premium", "league").
 		From("users").
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{"id": id}).
@@ -110,7 +111,7 @@ func SelectUser(id int64) (*UserInfo, error) {
 }
 
 // SelectLeaders считывает данные о лидерах из бд
-func SelectLeaders() (map[string][]*Leader, error) {
+func SelectLeaders() (map[int16][]*Leader, error) {
 	// создаём sql запрос
 	query, args, err := sq.Select("id", "position", "username", "blocks", "league").
 		From("leaderboard").
@@ -126,11 +127,11 @@ func SelectLeaders() (map[string][]*Leader, error) {
 		return nil, err
 	}
 
-	leaders := make(map[string][]*Leader)
+	leaders := make(map[int16][]*Leader)
 	// проходимся по каждой строке, чтобы считать данные
 	for rows.Next() {
 		leader := &Leader{}
-		var league string
+		var league int16
 		err = rows.Scan(&leader.Id, &leader.Position, &leader.Username, &leader.Blocks, &league)
 		if err != nil {
 			return nil, err
