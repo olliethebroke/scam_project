@@ -20,7 +20,9 @@ type httpConfig struct {
 	port string
 }
 
+// NewHTTPConfig создаёт новую конфигурацию http соединения в зависимости от переменных окружения
 func NewHTTPConfig() (*httpConfig, error) {
+	// получаем данные из переменных окружения
 	host := os.Getenv(httpHostEnvName)
 	if len(host) == 0 {
 		return nil,
@@ -31,11 +33,14 @@ func NewHTTPConfig() (*httpConfig, error) {
 		return nil,
 			errors.New(fmt.Sprintf("internal/config/env/http.go - env variable %s not found", httpPortEnvName))
 	}
+	// возвращаем конфиг
 	return &httpConfig{
 		host: host,
 		port: port,
 	}, nil
 }
+
+// Address возвращает интерфейс
 func (cfg *httpConfig) Address() string {
 	return net.JoinHostPort(cfg.host, cfg.port)
 }

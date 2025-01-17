@@ -15,6 +15,7 @@ type PGConfig interface {
 	DSN() string
 }
 
+// TGConfig интерфейс конфигуратора для взаимодействия с telegram-api
 type TGConfig interface {
 	Token() string
 	ChatId() int64

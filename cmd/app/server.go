@@ -55,6 +55,7 @@ func main() {
 	if err != nil {
 		logrus_logger.Log.Fatal("cmd/app/server.go - failed to connect to database: ", err)
 	}
+	// закрываем коннект с бд после завершения функции main
 	defer postgres.Close()
 	logrus_logger.Log.Info("server is listening")
 	// запускаем сервер
