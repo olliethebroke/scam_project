@@ -7,15 +7,19 @@ import (
 	"crypto_scam/internal/logger/logrus_logger"
 	"crypto_scam/internal/storage/postgres"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"net/http"
 	"os"
 )
 
 const (
-	createUserPostfix     = "/user/create/{id}"
-	getUserPostfix        = "/user/get/{id}"
-	updateUserPostfix     = "/user/update/{id}"
-	getLeaderboardPostfix = "/leaderboard/get"
+	createUserPostfix       = "/user/create/{id}"
+	getUserPostfix          = "/user/get/{id}"
+	updateUserPostfix       = "/user/update/{id}"
+	getLeaderboardPostfix   = "/leaderboard/get"
+	createFriendshipPostfix = "/friendship/create"
+	getUserTasksPostfix     = "/tasks/get/{id}"
+	createTaskPostfix       = "/tasks/create"
 )
 
 var configPath string
@@ -45,10 +49,16 @@ func main() {
 	}
 	// создаём маршрутизатор и добавляем ручки
 	r := chi.NewRouter()
+	// если где-то внутри сервера (обработчика запроса) произойдет паника, приложение не должно упасть
+	r.Use(middleware.Recoverer)
+
 	r.Post(createUserPostfix, api.CreateUserHandler)
+	r.Post(createFriendshipPostfix, api.CreateFriendshipHandler)
+	r.Post(createTaskPostfix, api.CreateTaskHandler)
 	r.Get(getUserPostfix, api.GetUserHandler)
 	r.Get(getLeaderboardPostfix, api.GetLeaderboardHandler)
-	r.Put(updateUserPostfix, api.UpdateUserHandler)
+	r.Get(getUserTasksPostfix, api.GetUserTasksHandler)
+	r.Patch(updateUserPostfix, api.UpdateUserHandler)
 
 	// коннектимся к бд
 	err = postgres.Connect(pgConfig.DSN())

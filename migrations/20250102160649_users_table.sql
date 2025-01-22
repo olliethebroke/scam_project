@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 create table if not exists users (
     id bigint not null,
-    username text not null default 'You',
+    firstname text not null default 'You',
     blocks bigint not null default 0,
     record integer not null default 0,
     last_checkin timestamp not null default now(),

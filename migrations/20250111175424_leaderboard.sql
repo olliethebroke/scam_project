@@ -3,7 +3,7 @@
 create table leaderboard (
     id bigint not null,
     position smallint not null default 100,
-    username text not null default 'You',
+    firstname text not null default 'You',
     blocks bigint not null default 0,
     league smallint not null default 0
 );
