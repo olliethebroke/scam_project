@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/joho/godotenv"
+	"time"
 )
 
 // HTTPConfig интерфейс конфигуратора слушающего интерфейса
@@ -19,6 +20,7 @@ type PGConfig interface {
 type TGConfig interface {
 	Token() string
 	ChatId() int64
+	InitDataExpiration() time.Duration
 }
 
 // Load загружает переменные из env файла в переменные окружения процесса

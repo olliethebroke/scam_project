@@ -2,7 +2,7 @@ FROM golang:1.23.4-alpine as build-stage
 COPY .  /server/
 WORKDIR /server/
 RUN go mod download
-RUN go build -o ./bin/server_out ./cmd/app/server.go
+RUN go build -o ./bin/server_out ./cmd/app/server/server.go
 
 FROM alpine:latest
 ARG ENV_FILE
