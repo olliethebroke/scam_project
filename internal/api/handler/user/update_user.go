@@ -4,6 +4,7 @@ import (
 	"crypto_scam/internal/api/handler/user/model"
 	"crypto_scam/internal/converter"
 	"crypto_scam/internal/logger"
+	"crypto_scam/internal/repository"
 	"encoding/json"
 	"net/http"
 )
@@ -19,11 +20,20 @@ import (
 // В результате выполнения функции на клиент отправляется
 // статус выполнения запроса.
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
-	// получаем id пользователя из контекста запроса
+	// получаем реализацию интерфейса Repository из контекста.
+	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
+	db, ok := r.Context().Value("db").(repository.Repository)
+	if !ok {
+		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
+		logger.Warn("get_user.go/UpdateUserHandler - error while getting database from context")
+		return
+	}
+	// получаем id пользователя из контекста.
+	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
 	id, ok := r.Context().Value("id").(int64)
 	if !ok {
 		http.Error(w, "failed to get user id", http.StatusInternalServerError)
-		logger.Warn("update_user.go/UpdateUserHandler - error while getting user id from context")
+		logger.Warn("get_user.go/UpdateUserHandler - error while getting user id from context")
 		return
 	}
 
@@ -36,7 +46,7 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// обновляем данные в бд
-	err := database.UpdateUser(id, converter.UpdateUserRequestToUpdateUser(dataToUpdate))
+	err := db.UpdateUser(id, converter.UpdateUserRequestToUpdateUser(dataToUpdate))
 	if err != nil {
 		http.Error(w, "failed to update user", http.StatusInternalServerError)
 		logger.Warn("handler.go/UpdateUserHandler - error while updating user: ", err)

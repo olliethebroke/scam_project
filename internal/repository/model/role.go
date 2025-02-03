@@ -6,6 +6,6 @@ package model
 // Id - идентификатор пользователя в телеграм,
 // Role - роль пользователя.
 type UserRole struct {
-	Id   int64 `json:"id"`
-	Role int16 `json:"role"`
+	Id   int64
+	Role int16
 }

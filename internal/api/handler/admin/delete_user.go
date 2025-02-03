@@ -3,6 +3,7 @@ package admin_api
 import (
 	"crypto_scam/internal/api/handler/admin/model"
 	"crypto_scam/internal/logger"
+	"crypto_scam/internal/repository"
 	"encoding/json"
 	"net/http"
 )
@@ -16,6 +17,14 @@ import (
 // В результате выполнения функции на клиент отправляется
 // статус выполнения запроса.
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	// получаем реализацию интерфейса Repository из контекста.
+	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
+	db, ok := r.Context().Value("db").(repository.Repository)
+	if !ok {
+		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
+		logger.Warn("get_user.go/DeleteUserHandler - error while getting database from context")
+		return
+	}
 	userToDelete := &model.DeleteUserRequest{}
 	err := json.NewDecoder(r.Body).Decode(userToDelete)
 	if err != nil {
@@ -25,7 +34,7 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// удаляем пользователя из бд
-	err = database.DeleteUser(userToDelete.Id)
+	err = db.DeleteUser(userToDelete.Id)
 	if err != nil {
 		http.Error(w, "failed to delete user", http.StatusInternalServerError)
 		logger.Warn("delete_user.go/DeleteUserHandler - error while deleting user: ", err)

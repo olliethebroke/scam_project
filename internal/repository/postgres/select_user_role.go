@@ -17,9 +17,9 @@ import (
 func (pg *postgres) SelectUserRole(id int64) (*model.UserRole, error) {
 	// формируем sql запрос
 	query, args, err := sq.Select("role").
-		From("users").
+		From("admins").
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"admin_id": id}).
 		ToSql()
 	if err != nil {
 		return nil, err

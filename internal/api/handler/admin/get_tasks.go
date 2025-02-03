@@ -3,6 +3,7 @@ package admin_api
 import (
 	"crypto_scam/internal/converter"
 	"crypto_scam/internal/logger"
+	"crypto_scam/internal/repository"
 	"encoding/json"
 	"net/http"
 )
@@ -13,8 +14,16 @@ import (
 // данными о всех игровых заданиях, представленными
 // структурой GetTasksResponse.
 func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
+	// получаем реализацию интерфейса Repository из контекста.
+	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
+	db, ok := r.Context().Value("db").(repository.Repository)
+	if !ok {
+		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
+		logger.Warn("get_user.go/GetTasksHandler - error while getting database from context")
+		return
+	}
 	// получаем из базы данных задания
-	tasks, err := database.SelectTasks()
+	tasks, err := db.SelectTasks()
 	if err != nil {
 		http.Error(w, "failed to get tasks", http.StatusNotFound)
 		logger.Warn("get_tasks.go/GetTasksHandler - error while selecting tasks: ", err)

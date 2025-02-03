@@ -2,6 +2,7 @@ package user_api
 
 import (
 	"crypto_scam/internal/logger"
+	"crypto_scam/internal/repository"
 	"encoding/json"
 	"net/http"
 )
@@ -16,16 +17,25 @@ import (
 // данными о заданиях конкретного пользователя,
 // представленными структурой GetUserTasksResponse.
 func GetUserTasksHandler(w http.ResponseWriter, r *http.Request) {
-	// получаем id пользователя из контекста запроса
+	// получаем реализацию интерфейса Repository из контекста.
+	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
+	db, ok := r.Context().Value("db").(repository.Repository)
+	if !ok {
+		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
+		logger.Warn("get_user.go/GetUserTasksHandler - error while getting database from context")
+		return
+	}
+	// получаем id пользователя из контекста.
+	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
 	id, ok := r.Context().Value("id").(int64)
 	if !ok {
 		http.Error(w, "failed to get user id", http.StatusInternalServerError)
-		logger.Warn("get_user_tasks.go/GetUserTasksHandler - error while getting user id from context")
+		logger.Warn("get_user.go/GetUserTasksHandler - error while getting user id from context")
 		return
 	}
 
 	// получаем задания из бд
-	tasks, err := database.SelectUserTasks(id)
+	tasks, err := db.SelectUserTasks(id)
 	if err != nil {
 		http.Error(w, "failed to get user tasks", http.StatusInternalServerError)
 		logger.Warn("handler.go/GetUserTasksHandler - error while selecting tasks: ", err)

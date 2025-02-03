@@ -1,10 +1,11 @@
 package repository
 
-import "crypto_scam/internal/repository/model"
+import (
+	"crypto_scam/internal/repository/model"
+)
 
 // Repository имплементирует взаимодействие с базой данных.
 //
-// Connect - создаёт пул соединений с бд,
 // Close - закрывает соединение с бд.
 //
 // InsertUser - добавляет пользователя,
@@ -22,7 +23,6 @@ import "crypto_scam/internal/repository/model"
 //
 // InsertFriendship - добавляет дружбу.
 type Repository interface {
-	Connect(dsn string) error
 	Close()
 
 	InsertUser(id int64, firstname string) (*model.User, error)

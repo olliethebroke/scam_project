@@ -3,6 +3,7 @@ package user_api
 import (
 	"crypto_scam/internal/converter"
 	"crypto_scam/internal/logger"
+	"crypto_scam/internal/repository"
 	"encoding/json"
 	"net/http"
 )
@@ -16,7 +17,16 @@ import (
 // В результате выполнения функции на клиент отправляется json с
 // данными о пользователе, представленными структурой GetUserResponse.
 func GetUserHandler(w http.ResponseWriter, r *http.Request) {
-	// получаем id пользователя из контекста запроса
+	// получаем реализацию интерфейса Repository из контекста.
+	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
+	db, ok := r.Context().Value("db").(repository.Repository)
+	if !ok {
+		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
+		logger.Warn("get_user.go/GetUserHandler - error while getting database from context")
+		return
+	}
+	// получаем id пользователя из контекста.
+	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
 	id, ok := r.Context().Value("id").(int64)
 	if !ok {
 		http.Error(w, "failed to get user id", http.StatusInternalServerError)
@@ -25,7 +35,7 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// получаем данные о пользователе из бд
-	user, err := database.SelectUser(id)
+	user, err := db.SelectUser(id)
 	if err != nil {
 		http.Error(w, "failed to get user", http.StatusNotFound)
 		logger.Warn("handler.go/GetUserHandler - error while selecting user: ", err)

@@ -3,6 +3,7 @@ package user_api
 import (
 	"crypto_scam/internal/converter"
 	"crypto_scam/internal/logger"
+	"crypto_scam/internal/repository"
 	"encoding/json"
 	"net/http"
 )
@@ -13,8 +14,16 @@ import (
 // В результате выполнения функции на клиент отправляется json с
 // данными о пользователе, представленными структурой GetLeaderboardResponse.
 func GetLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
+	// получаем реализацию интерфейса Repository из контекста.
+	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
+	db, ok := r.Context().Value("db").(repository.Repository)
+	if !ok {
+		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
+		logger.Warn("get_user.go/GetLeaderboardHandler - error while getting database from context")
+		return
+	}
 	// получаем данные из списка лидеров
-	leaders, err := database.SelectLeaders()
+	leaders, err := db.SelectLeaders()
 	if err != nil {
 		http.Error(w, "failed to get leaders", http.StatusInternalServerError)
 		logger.Warn("handler.go/GetLeaderboardHandler - error while selecting leaders: ", err)

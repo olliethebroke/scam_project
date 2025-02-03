@@ -5,10 +5,12 @@ import (
 	"os"
 )
 
-var log = logrus.New()
+var log *logrus.Logger
 
 // init инициализирует логгер
 func init() {
+	// инициализируем переменную лог
+	log = logrus.New()
 	// устанавливем уровень логирования
 	log.SetLevel(logrus.InfoLevel)
 	// устанавливем вывод логов в файл

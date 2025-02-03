@@ -11,12 +11,15 @@ import (
 	"strings"
 )
 
-var database repository.Repository
-
 // UserAuthMiddleware проверяет пользователя, отправившего апи запрос.
 // Проверка осуществляется по правам доступа к тому или иному хендлеру,
-// используется initDataRaw для определения подлинности id пользователя
-func UserAuthMiddleware(requiredRole int16) func(next http.Handler) http.Handler {
+// используется initDataRaw для определения подлинности id пользователя.
+//
+// Входными параметрами функции являются необходимая роль для выполнения запроса
+// и объект, реализующий интерфейс Repository, для работы с базой данных.
+//
+// Выходным параметром функции является функция, реализующая интерфейс Handler.
+func UserAuthMiddleware(requiredRole int16, db repository.Repository) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// добавим логгирование запроса
@@ -31,8 +34,8 @@ func UserAuthMiddleware(requiredRole int16) func(next http.Handler) http.Handler
 			}
 
 			// проверяем, есть ли пользователь в бд
-			// получаем его id и роль в переменную userInfo
-			userInfo, err := database.SelectUserRole(initData.User.ID)
+			// получаем его id и роль в переменную userRole
+			userRole, err := db.SelectUserRole(initData.User.ID)
 			if err != nil {
 				http.Error(w, "user not found", http.StatusNotFound)
 				return
@@ -40,10 +43,12 @@ func UserAuthMiddleware(requiredRole int16) func(next http.Handler) http.Handler
 
 			// проверяем, есть ли у пользователя права
 			// на использование хендлера
-			if userInfo.Role >= requiredRole {
-				// создаём контекст с id пользователя,
-				// по которому делается запрос
-				ctx := context.WithValue(r.Context(), "id", userInfo.Id)
+			if userRole.Role >= requiredRole {
+				// создаём контекст с реализацией интерфейса бд
+				// и id пользователя, по которому делается запрос
+				ctx := r.Context()
+				ctx = context.WithValue(ctx, "id", userRole.Id)
+				ctx = context.WithValue(ctx, "db", db)
 
 				// добавляем созданный контекст в запрос
 				r = r.WithContext(ctx)
@@ -63,7 +68,13 @@ func UserAuthMiddleware(requiredRole int16) func(next http.Handler) http.Handler
 // getInitData отвечает за обработку данных пользователя
 // из заголовка запроса.
 // Функция извлекает данные из заголовка, проверяет их на подлинность,
-// а затем парсит, в конце отдавая струткуру InitData
+// а затем парсит, в конце отдавая струткуру InitData.
+//
+// Входным параметром функции является указатель на тип Request.
+//
+// Выходными параметрами функции являются указатель на тип InitData
+// и ошибка, если она возникла, в противном случае вместо неё будет
+// возвращён nil.
 func getInitData(r *http.Request) (*tma.InitData, error) {
 	// извлекаем данные из заголовка запроса
 	initDataRaw := r.Header.Get("Authorization")
