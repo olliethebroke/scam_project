@@ -11,7 +11,7 @@ package model
 type GetTasksResponse struct {
 	Id          int16  `json:"id"`
 	Description string `json:"description"`
-	Reward      int    `json:"reward"`
+	Reward      int32  `json:"reward"`
 	ActionType  string `json:"action_type"`
 	ActionData  string `json:"action_data"`
 }

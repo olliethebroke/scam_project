@@ -16,8 +16,8 @@ type User struct {
 	Firstname      string
 	Blocks         int64
 	Record         int64
-	DaysStreak     int
-	InvitedFriends int
+	DaysStreak     int16
+	InvitedFriends int16
 	IsPremium      bool
 	League         int16
 	Award          bool

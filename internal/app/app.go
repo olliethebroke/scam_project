@@ -3,15 +3,17 @@ package app
 import (
 	"context"
 	"crypto_scam/internal/api/access"
-	admin_api "crypto_scam/internal/api/handler/admin"
-	user_api "crypto_scam/internal/api/handler/user"
+	adminAPI "crypto_scam/internal/api/handler/admin"
+	userAPI "crypto_scam/internal/api/handler/user"
 	"crypto_scam/internal/closer"
 	"crypto_scam/internal/config"
 	"crypto_scam/internal/logger"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 // App описывает поля, необходимые
@@ -100,12 +102,25 @@ func (a *App) initConfig(_ context.Context) error {
 	// переменной окружения процесса CONFIG_PATH
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) == 0 {
-		logger.Fatal("failed to get CONFIG_PATH env variable")
+		configPath = filepath.Join(".", "..", "test.env")
+		logger.Warn("failed to get CONFIG_PATH env variable; test.env is used")
 	}
 	logger.Info("path to config:", configPath)
 
+	// проверяем, существует ли файл
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		log.Fatal("config file does not exist at path: ", configPath)
+	}
+
+	// получаем абсолютный путь к файлу
+	var err error
+	configPath, err = filepath.Abs(configPath)
+	if err != nil {
+		log.Fatal("failed to get absolute path to env file")
+	}
+
 	// загружаем переменные из указанного .env файла в переменные окружения процесса
-	if err := config.Load(configPath); err != nil {
+	if err = config.Load(configPath); err != nil {
 		logger.Fatal("failed to load variables from env file: ", err)
 	}
 
@@ -121,7 +136,7 @@ func (a *App) initConfig(_ context.Context) error {
 // Выходным параметром метода является ошибка,
 // если она возникла, в противном случае вместо
 // неё будет возвращён nil.
-func (a *App) initServiceProvider(ctx context.Context) error {
+func (a *App) initServiceProvider(_ context.Context) error {
 	// инициализируем поле serviceProvider
 	a.serviceProvider = newServiceProvider()
 	return nil
@@ -145,16 +160,27 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	// инициализируем структуру для работы с бд
 	a.serviceProvider.DB(ctx)
 
+	// инициализируем структуру для работы с тг
+	a.serviceProvider.TGConfig()
+
 	// администраторские запросы
-	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db)).Get(adminGetTasksPostfix, admin_api.GetTasksHandler)
-	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db)).Post(adminCreateTaskPostfix, admin_api.CreateTaskHandler)
-	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db)).Delete(adminDeleteTaskPostfix, admin_api.DeleteTaskHandler)
-	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db)).Delete(adminDeleteUserPostfix, admin_api.DeleteUserHandler)
+	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db, a.serviceProvider.tgConfig)).
+		Get(AdminGetTasksPostfix, adminAPI.GetTasksHandler)
+	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db, a.serviceProvider.tgConfig)).
+		Post(AdminCreateTaskPostfix, adminAPI.CreateTaskHandler)
+	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db, a.serviceProvider.tgConfig)).
+		Delete(AdminDeleteTaskPostfix, adminAPI.DeleteTaskHandler)
+	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db, a.serviceProvider.tgConfig)).
+		Delete(AdminDeleteUserPostfix, adminAPI.DeleteUserHandler)
 	// пользовательские запросы
-	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db)).Get(getUserPostfix, user_api.GetUserHandler)
-	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db)).Get(getLeaderboardPostfix, user_api.GetLeaderboardHandler)
-	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db)).Get(getUserTasksPostfix, user_api.GetUserTasksHandler)
-	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db)).Patch(updateUserPostfix, user_api.UpdateUserHandler)
+	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db, a.serviceProvider.tgConfig)).
+		Get(GetUserPostfix, userAPI.GetUserHandler)
+	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db, a.serviceProvider.tgConfig)).
+		Get(GetLeaderboardPostfix, userAPI.GetLeaderboardHandler)
+	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db, a.serviceProvider.tgConfig)).
+		Get(GetUserTasksPostfix, userAPI.GetUserTasksHandler)
+	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db, a.serviceProvider.tgConfig)).
+		Patch(UpdateUserPostfix, userAPI.UpdateUserHandler)
 
 	return nil
 }
@@ -172,4 +198,32 @@ func (a *App) runHTTPServer() error {
 		return err
 	}
 	return nil
+}
+
+// ServiceProvider возвращает указатель на структуру зависимостей.
+//
+// Выходным параметром метода является указатель на тип serviceProvider.
+func (a *App) ServiceProvider() *serviceProvider {
+	// если указатель serviceProvider nil
+	if a.serviceProvider == nil {
+		// инициализируем поле serviceProvider
+		a.serviceProvider = newServiceProvider()
+	}
+
+	// возвращаем указатель на serviceProvider
+	return a.serviceProvider
+}
+
+// Router возвращает указатель на маршрутизатор.
+//
+// Выходным параметром метода является указатель на тип chi.Mux.
+func (a *App) Router(ctx context.Context) *chi.Mux {
+	// если указатель на маршрутизатор nil
+	if a.r == nil {
+		// инициализируем маршрутизатор
+		_ = a.initHTTPServer(ctx)
+	}
+
+	// возвращаем указатель на chi.Mux
+	return a.r
 }

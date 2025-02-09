@@ -2,7 +2,7 @@
 create table if not exists completed_tasks (
     id serial primary key,
     user_id bigint,
-    task_id integer
+    task_id smallint
 );
 
 -- +goose Down

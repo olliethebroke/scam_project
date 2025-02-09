@@ -6,10 +6,6 @@ import (
 	"crypto_scam/internal/logger"
 )
 
-// TODO: 1) покрыть код тестами
-// TODO: 2) настроить таймауты
-// TODO: 3) настроить рейтлимитер
-
 func main() {
 	// инициализируем зависимости для работы приложения
 	a, err := app.NewApp(context.Background())

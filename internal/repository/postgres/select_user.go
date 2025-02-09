@@ -56,7 +56,7 @@ func (pg *postgres) SelectUser(id int64) (*model.User, error) {
 // аргумент lastCheckin - время последнего захода, за который давалась daily награда;
 // аргумент streak - текущий стрик игрока с указанным id;
 // возвращает ошибку и флаг о том, нужна ли награда
-func (pg *postgres) updateStreak(id int64, lastCheckin *time.Time, streak *int) (bool, error) {
+func (pg *postgres) updateStreak(id int64, lastCheckin *time.Time, streak *int16) (bool, error) {
 	// время проверки
 	now := time.Now()
 	// разность текущего времени и времени получения последней daily награды

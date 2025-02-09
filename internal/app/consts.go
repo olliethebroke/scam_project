@@ -10,14 +10,14 @@ const (
 	createFriendshipPostfix = "/friendship/create"
 
 	// администраторские запросы
-	adminCreateTaskPostfix = "/task/create"
-	adminDeleteTaskPostfix = "/task/delete"
-	adminGetTasksPostfix   = "/tasks/get"
-	adminDeleteUserPostfix = "/user/delete"
+	AdminCreateTaskPostfix = "/task/create"
+	AdminDeleteTaskPostfix = "/task/delete"
+	AdminGetTasksPostfix   = "/tasks/get"
+	AdminDeleteUserPostfix = "/user/delete"
 
 	// пользовательские запросы
-	getUserPostfix        = "/user/get"
-	updateUserPostfix     = "/user/update"
-	getLeaderboardPostfix = "/leaderboard/get"
-	getUserTasksPostfix   = "/user/tasks/get"
+	GetUserPostfix        = "/user/get"
+	UpdateUserPostfix     = "/user/update"
+	GetLeaderboardPostfix = "/leaderboard/get"
+	GetUserTasksPostfix   = "/user/tasks/get"
 )

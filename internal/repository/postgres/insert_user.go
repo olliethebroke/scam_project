@@ -7,7 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-// InsertUser добавляет нового пользователя в базу даннх,
+// InsertUser добавляет нового пользователя в базу данных,
 // возвращяя данные по умолчанию.
 //
 // На вход метод принимает id и имя нового пользователя.
@@ -21,7 +21,6 @@ func (pg *postgres) InsertUser(id int64, firstname string) (*model.User, error) 
 	if err != nil {
 		return nil, err
 	}
-
 	// создаём sql запрос
 	query, args, err := sq.Insert("users").
 		PlaceholderFormat(sq.Dollar).
@@ -34,7 +33,7 @@ func (pg *postgres) InsertUser(id int64, firstname string) (*model.User, error) 
 	}
 
 	// вносим пользователя в бд
-	err = pg.pool.QueryRow(context.Background(), query, args...).Scan(&firstname)
+	_, err = pg.pool.Exec(context.Background(), query, args...)
 	if err != nil {
 		return nil, err
 	}

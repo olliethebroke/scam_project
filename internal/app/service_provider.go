@@ -2,11 +2,13 @@ package app
 
 import (
 	"context"
+	"crypto_scam/internal/closer"
 	"crypto_scam/internal/config"
 	"crypto_scam/internal/config/env"
 	"crypto_scam/internal/logger"
 	"crypto_scam/internal/repository"
 	"crypto_scam/internal/repository/postgres"
+	"crypto_scam/pkg/hooks/telegram"
 )
 
 type serviceProvider struct {
@@ -56,24 +58,26 @@ func (s *serviceProvider) PGConfig() config.PGConfig {
 //
 // Выходным параметром метода является объект, реализующий интерфейс
 // TGConfig
-//func (s *serviceProvider) TGConfig() config.TGConfig {
-//	// если интерфейс не реализован
-//	if s.tgConfig == nil {
-//		// создаём новый конфиг
-//		// реализуем интерфейс
-//		cfg, err := env.NewTgConfig()
-//		if err != nil {
-//			logger.Fatal("failed to create tgConfig")
-//		}
-//
-//		// передаём переменную, реализующую интерфейс,
-//		// в поле экземляра структуры serviceProvider
-//		s.tgConfig = cfg
-//	}
-//
-//	// возвращаем переменную, реализующую интерфейс
-//	return s.tgConfig
-//}
+func (s *serviceProvider) TGConfig() config.TGConfig {
+	// если интерфейс не реализован
+	if s.tgConfig == nil {
+		// создаём новый конфиг
+		// реализуем интерфейс
+		cfg, err := env.NewTgConfig()
+		if err != nil {
+			logger.Fatal("failed to create tgConfig: ", err)
+		}
+
+		// передаём переменную, реализующую интерфейс,
+		// в поле экземляра структуры serviceProvider
+		// и инициализируем переменную конфигурации в пакете telegram
+		s.tgConfig = cfg
+		telegram.InitTGConfig(cfg)
+	}
+
+	// возвращаем переменную, реализующую интерфейс
+	return s.tgConfig
+}
 
 // HTTPConfig возвращает переменную, реализующую интерфейс HTTPConfig
 // для конфигурации работы с протоколом HTTP. Если такая переменная
@@ -116,6 +120,13 @@ func (s *serviceProvider) DB(ctx context.Context) repository.Repository {
 		if err != nil {
 			logger.Fatal("failed to create database: ", err)
 		}
+
+		// закрываем пул соединений с базой данных
+		// после завершения работы сервера
+		closer.Add(func() error {
+			db.Close()
+			return nil
+		})
 
 		// передаём переменную, реализующую интерфейс,
 		// в поле экземляра структуры serviceProvider

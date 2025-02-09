@@ -33,18 +33,25 @@ func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(taskToCreate)
 	if err != nil {
 		http.Error(w, "invalid json format", http.StatusBadRequest)
-		logger.Warn("handler.go/CreateTaskHandler - error while decoding taskToCreate: ", err)
+		logger.Warn("handler.go/CreateTaskHandler - error while decoding task: ", err)
 		return
 	}
 
 	// добавляем полученное задание в бд
-	err = db.InsertTask(converter.CreateTaskRequestToTask(taskToCreate))
+	createdTask, err := db.InsertTask(converter.CreateTaskRequestToTask(taskToCreate))
 	if err != nil {
 		http.Error(w, "failed to create task", http.StatusInternalServerError)
-		logger.Warn("handler.go/CreateTaskHandler - error while inserting taskToCreate: ", err)
+		logger.Warn("handler.go/CreateTaskHandler - error while inserting task: ", err)
 		return
 	}
 
-	// отправляем клиенту статус успешного создания задания
+	// кодируем данные и отправляем на клиент
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(w).Encode(converter.TaskToCreateTaskResponse(createdTask))
+	if err != nil {
+		http.Error(w, "failed to encode task", http.StatusInternalServerError)
+		logger.Warn("handler.go/CreateTaskHandler - error while encoding task: ", err)
+		return
+	}
 }

@@ -17,8 +17,8 @@ type GetUserResponse struct {
 	Firstname      string `json:"firstname"`
 	Blocks         int64  `json:"blocks"`
 	Record         int64  `json:"record"`
-	DaysStreak     int    `json:"days_streak"`
-	InvitedFriends int    `json:"invited_friends"`
+	DaysStreak     int16  `json:"days_streak"`
+	InvitedFriends int16  `json:"invited_friends"`
 	IsPremium      bool   `json:"is_premium"`
 	League         int16  `json:"league"`
 	Award          bool   `json:"award"`

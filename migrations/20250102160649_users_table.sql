@@ -4,7 +4,7 @@ create table if not exists users (
     id bigint not null,
     firstname text not null default 'You',
     blocks bigint not null default 0,
-    record integer not null default 0,
+    record bigint not null default 0,
     last_checkin timestamp not null default now(),
     days_streak smallint not null default 1,
     invited_friends smallint not null default 0,

@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 create table if not exists admins (
-    admin_id bigint,
+    id bigint,
     role smallint
 );
 -- +goose StatementEnd

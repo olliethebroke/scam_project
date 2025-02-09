@@ -10,7 +10,7 @@ package model
 type Task struct {
 	Id          int16
 	Description string
-	Reward      int
+	Reward      int32
 	ActionType  string
 	ActionData  string
 	IsCompleted bool

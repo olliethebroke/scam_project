@@ -25,3 +25,17 @@ func CreateTaskRequestToTask(from *modelAPI.CreateTaskRequest) *modelDB.Task {
 	// возвращаем указатель
 	return to
 }
+
+// TaskToCreateTaskResponse преобразует данные из структуры Task
+// в структуру CreateTaskResponse.
+// Используется для конвертации данных из бд в данные для ответа клиенту.
+//
+// Входные данные для функции - указатель на тип данных Task.
+//
+// Выходные данные - указатель на тип данных CreateTaskResponse.
+func TaskToCreateTaskResponse(from *modelDB.Task) *modelAPI.CreateTaskResponse {
+	to := &modelAPI.CreateTaskResponse{
+		Id: from.Id,
+	}
+	return to
+}

@@ -14,7 +14,7 @@ var _ config.TGConfig = (*tgConfig)(nil)
 const (
 	tgBotTokenName  = "TG_BOT_TOKEN"
 	tgChatIdName    = "TG_CHAT_ID"
-	initDataExpName = "INIT_DATA_EXP_TIME=3"
+	initDataExpName = "INIT_DATA_EXP_TIME"
 )
 
 // tgConfig стуктура-конфигурация взаимодействия с telegram-api

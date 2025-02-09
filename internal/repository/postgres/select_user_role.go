@@ -19,7 +19,7 @@ func (pg *postgres) SelectUserRole(id int64) (*model.UserRole, error) {
 	query, args, err := sq.Select("role").
 		From("admins").
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"admin_id": id}).
+		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
 		return nil, err

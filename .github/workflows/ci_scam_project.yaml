@@ -38,6 +38,7 @@ jobs:
           echo "PG_USER=postgres" >> prod.env
           echo "PG_PASSWORD=${{ secrets.PG_PASSWORD }}" >> prod.env
           echo "PG_PORT=54321" >> prod.env
+          echo "MIGRATION_DSN=${{ secrets.PG_DSN }}" >> prod.env
           echo "MIGRATION_DIR=./migrations" >> prod.env
           echo "ENV_FILE=prod.env" >> prod.env
           echo "PLATFORM=linux/amd64" >> prod.env

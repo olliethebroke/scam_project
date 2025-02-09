@@ -1,6 +1,7 @@
 package user_api
 
 import (
+	"crypto_scam/internal/converter"
 	"crypto_scam/internal/logger"
 	"crypto_scam/internal/repository"
 	"encoding/json"
@@ -45,7 +46,7 @@ func GetUserTasksHandler(w http.ResponseWriter, r *http.Request) {
 	// энкодим данные о заданиях
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(tasks); err != nil {
+	if err = json.NewEncoder(w).Encode(converter.TasksToGetUserTasksResponse(tasks)); err != nil {
 		http.Error(w, "failed to encode user tasks", http.StatusInternalServerError)
 		logger.Warn("handler.go/GetUserTasksHandler - error while selecting tasks: ", err)
 		return

@@ -23,17 +23,17 @@ func init() {
 }
 
 func Fatal(args ...interface{}) {
-	log.Fatal(args)
+	log.Fatal(args...)
 }
 
 func Warn(args ...interface{}) {
-	log.Warn(args)
+	log.Warn(args...)
 }
 
 func Info(args ...interface{}) {
-	log.Info(args)
+	log.Info(args...)
 }
 
 func Infof(format string, args ...interface{}) {
-	log.Infof(format, args)
+	log.Infof(format, args...)
 }

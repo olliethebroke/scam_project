@@ -2,9 +2,9 @@ package access
 
 import (
 	"context"
+	"crypto_scam/internal/config"
 	"crypto_scam/internal/logger"
 	"crypto_scam/internal/repository"
-	"crypto_scam/pkg/hooks/telegram"
 	"errors"
 	tma "github.com/telegram-mini-apps/init-data-golang"
 	"net/http"
@@ -15,11 +15,12 @@ import (
 // Проверка осуществляется по правам доступа к тому или иному хендлеру,
 // используется initDataRaw для определения подлинности id пользователя.
 //
-// Входными параметрами функции являются необходимая роль для выполнения запроса
-// и объект, реализующий интерфейс Repository, для работы с базой данных.
+// Входными параметрами функции являются необходимая роль для выполнения запроса,
+// объект, реализующий интерфейс Repository, для работы с базой данных и
+// объект, реализующий интерфейс TGConfig, для работы с Telegram-API.
 //
 // Выходным параметром функции является функция, реализующая интерфейс Handler.
-func UserAuthMiddleware(requiredRole int16, db repository.Repository) func(next http.Handler) http.Handler {
+func UserAuthMiddleware(requiredRole int16, db repository.Repository, tg config.TGConfig) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// добавим логгирование запроса
@@ -27,7 +28,7 @@ func UserAuthMiddleware(requiredRole int16, db repository.Repository) func(next 
 
 			// обрабатываем данные пользователя,
 			// сделавшего запрос
-			initData, err := getInitData(r)
+			initData, err := getInitData(r, tg)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -70,23 +71,22 @@ func UserAuthMiddleware(requiredRole int16, db repository.Repository) func(next 
 // Функция извлекает данные из заголовка, проверяет их на подлинность,
 // а затем парсит, в конце отдавая струткуру InitData.
 //
-// Входным параметром функции является указатель на тип Request.
+// Входными параметрами функции являются указатель на тип Request
+// и объект, реализующий интерфейс TGConfig.
 //
 // Выходными параметрами функции являются указатель на тип InitData
 // и ошибка, если она возникла, в противном случае вместо неё будет
 // возвращён nil.
-func getInitData(r *http.Request) (*tma.InitData, error) {
+func getInitData(r *http.Request, tg config.TGConfig) (*tma.InitData, error) {
 	// извлекаем данные из заголовка запроса
 	initDataRaw := r.Header.Get("Authorization")
 	if initDataRaw == "" {
-		// http.Error(w, "authorization header is missing", http.StatusUnauthorized)
 		return nil, errors.New("authorization header is missing")
 	}
 
 	// разбиваем значение по ключу Authorization на две части
 	splitToken := strings.Split(initDataRaw, "tma ")
 	if len(splitToken) != 2 {
-		// http.Error(w, "invalid authorization format", http.StatusUnauthorized)
 		return nil, errors.New("authorization header is missing")
 	}
 
@@ -95,8 +95,7 @@ func getInitData(r *http.Request) (*tma.InitData, error) {
 	initDataRaw = splitToken[1]
 
 	// валидируем данные пользователя
-	if err := tma.Validate(initDataRaw, telegram.TgConfig.Token(), telegram.TgConfig.InitDataExpiration()); err != nil {
-		// http.Error(w, "bad init data", http.StatusBadRequest)
+	if err := tma.Validate(initDataRaw, tg.Token(), tg.InitDataExpiration()); err != nil {
 		return nil, errors.New("authorization header is missing")
 	}
 

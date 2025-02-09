@@ -38,6 +38,8 @@ func DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	err = db.DeleteTask(taskToDelete.Id)
 	if err != nil {
 		http.Error(w, "failed to delete task", http.StatusInternalServerError)
+		logger.Warn("delete_task.go/DeleteTaskHandler - error while deleting task id: ", err)
+		return
 	}
 
 	// если всё выполнилось без ошибок
