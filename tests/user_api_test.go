@@ -17,6 +17,7 @@ import (
 // получения лидерборда.
 func (s *ApiSuite) TestGetLeaderboardHandler() {
 	r := s.Require()
+	ctx := context.Background()
 
 	// формируем запрос
 	req, err := http.NewRequest("GET", app.GetLeaderboardPostfix, nil)
@@ -28,7 +29,7 @@ func (s *ApiSuite) TestGetLeaderboardHandler() {
 	resp := httptest.NewRecorder()
 
 	// создаём и инициализируем указатель на маршрутизатор
-	router := s.a.Router(context.Background())
+	router := s.a.Router(ctx)
 
 	// обрабатываем запрос
 	router.ServeHTTP(resp, req)
@@ -53,6 +54,7 @@ func (s *ApiSuite) TestGetLeaderboardHandler() {
 // получения пользователя.
 func (s *ApiSuite) TestGetUserHandler() {
 	r := s.Require()
+	ctx := context.Background()
 
 	// формируем запрос
 	req, err := http.NewRequest("GET", app.GetUserPostfix, nil)
@@ -64,7 +66,7 @@ func (s *ApiSuite) TestGetUserHandler() {
 	resp := httptest.NewRecorder()
 
 	// создаём и инициализируем указатель на маршрутизатор
-	router := s.a.Router(context.Background())
+	router := s.a.Router(ctx)
 
 	// обрабатываем запрос
 	router.ServeHTTP(resp, req)
@@ -92,6 +94,7 @@ func (s *ApiSuite) TestGetUserHandler() {
 // получения заданий пользователя.
 func (s *ApiSuite) TestGetUserTasksHandler() {
 	r := s.Require()
+	ctx := context.Background()
 
 	// формируем запрос
 	req, err := http.NewRequest("GET", app.GetUserTasksPostfix, nil)
@@ -103,7 +106,7 @@ func (s *ApiSuite) TestGetUserTasksHandler() {
 	resp := httptest.NewRecorder()
 
 	// создаём и инциализирует указатель на маршутизатор
-	router := s.a.Router(context.Background())
+	router := s.a.Router(ctx)
 
 	// обрабатываем запрос
 	router.ServeHTTP(resp, req)
@@ -134,6 +137,7 @@ func (s *ApiSuite) TestGetUserTasksHandler() {
 // обновления игровых показателей пользователя.
 func (s *ApiSuite) TestUpdateUserHandler() {
 	r := s.Require()
+	ctx := context.Background()
 
 	// формируем структуру-тело запрос
 	updateUserRequest := &modelAPI.UpdateUserRequest{
@@ -155,7 +159,7 @@ func (s *ApiSuite) TestUpdateUserHandler() {
 	resp := httptest.NewRecorder()
 
 	// создаём и инициализируем указатель на маршрутизатор
-	router := s.a.Router(context.Background())
+	router := s.a.Router(ctx)
 
 	// обрабатываем запрос
 	router.ServeHTTP(resp, req)
@@ -164,7 +168,7 @@ func (s *ApiSuite) TestUpdateUserHandler() {
 	r.Equal(http.StatusOK, resp.Result().StatusCode)
 
 	// получаем пользователя из бд
-	updatedUser, err := s.a.ServiceProvider().DB(context.Background()).SelectUser(adminId)
+	updatedUser, err := s.a.ServiceProvider().DB(ctx).SelectUser(ctx, adminId)
 	r.NoError(err)
 
 	// сравниваем поля обновленного пользователя

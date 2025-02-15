@@ -11,7 +11,7 @@ import (
 //
 // Метод возвращает ошибку, если она возникла,
 // в противном случае вместо неё будет возвращён nil.
-func (pg *postgres) InsertAdmin(id int64) error {
+func (pg *postgres) InsertAdmin(ctx context.Context, id int64) error {
 	// создаём sql запрос
 	query, args, err := sq.Insert("admins").
 		PlaceholderFormat(sq.Dollar).
@@ -23,7 +23,7 @@ func (pg *postgres) InsertAdmin(id int64) error {
 	}
 
 	// вносим админа в бд
-	_, err = pg.pool.Exec(context.Background(), query, args...)
+	_, err = pg.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}

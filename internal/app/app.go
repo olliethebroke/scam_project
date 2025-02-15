@@ -157,30 +157,25 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	// если где-то внутри сервера (обработчика запроса) произойдет паника, приложение не должно упасть
 	a.r.Use(middleware.Recoverer)
 
-	// инициализируем структуру для работы с бд
-	a.serviceProvider.DB(ctx)
-
-	// инициализируем структуру для работы с тг
-	a.serviceProvider.TGConfig()
+	// добавляем таймер на выполнение обработчика
+	//a.r.Use(middleware.Timeout(secondsForHandler * time.Second))
 
 	// администраторские запросы
-	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db, a.serviceProvider.tgConfig)).
-		Get(AdminGetTasksPostfix, adminAPI.GetTasksHandler)
-	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db, a.serviceProvider.tgConfig)).
-		Post(AdminCreateTaskPostfix, adminAPI.CreateTaskHandler)
-	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db, a.serviceProvider.tgConfig)).
-		Delete(AdminDeleteTaskPostfix, adminAPI.DeleteTaskHandler)
-	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.db, a.serviceProvider.tgConfig)).
-		Delete(AdminDeleteUserPostfix, adminAPI.DeleteUserHandler)
+	a.r.With(access.UserAuthMiddleware(admin, a.serviceProvider.DB(ctx), a.serviceProvider.TGConfig())).
+		Group(func(r chi.Router) {
+			r.Get(AdminGetTasksPostfix, adminAPI.GetTasksHandler)
+			r.Post(AdminCreateTaskPostfix, adminAPI.CreateTaskHandler)
+			r.Delete(AdminDeleteTaskPostfix, adminAPI.DeleteTaskHandler)
+			r.Delete(AdminDeleteUserPostfix, adminAPI.DeleteUserHandler)
+		})
 	// пользовательские запросы
-	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db, a.serviceProvider.tgConfig)).
-		Get(GetUserPostfix, userAPI.GetUserHandler)
-	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db, a.serviceProvider.tgConfig)).
-		Get(GetLeaderboardPostfix, userAPI.GetLeaderboardHandler)
-	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db, a.serviceProvider.tgConfig)).
-		Get(GetUserTasksPostfix, userAPI.GetUserTasksHandler)
-	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.db, a.serviceProvider.tgConfig)).
-		Patch(UpdateUserPostfix, userAPI.UpdateUserHandler)
+	a.r.With(access.UserAuthMiddleware(user, a.serviceProvider.DB(ctx), a.serviceProvider.TGConfig())).
+		Group(func(r chi.Router) {
+			r.Get(GetUserPostfix, userAPI.GetUserHandler)
+			r.Get(GetLeaderboardPostfix, userAPI.GetLeaderboardHandler)
+			r.Get(GetUserTasksPostfix, userAPI.GetUserTasksHandler)
+			r.Patch(UpdateUserPostfix, userAPI.UpdateUserHandler)
+		})
 
 	return nil
 }

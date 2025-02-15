@@ -8,13 +8,13 @@ import (
 
 // InsertLeader добавляет лидера в базу данных.
 //
-// На вход метод принимает указатель на тип Leader
-// и лигу, в которую лидера необходимо добавить.
+// Входными параметрами метода являются контекст,
+// указатель на тип Leader и лига лидера.
 //
 // Выходным параметром является ошибка,
 // если она возникла, в противном случае
 // вместо неё будет возвращён nil.
-func (pg *postgres) InsertLeader(leader *model.Leader, league int16) error {
+func (pg *postgres) InsertLeader(ctx context.Context, leader *model.Leader, league int16) error {
 	// создаём sql запрос
 	query, args, err := sq.Insert("leaderboard").
 		PlaceholderFormat(sq.Dollar).
@@ -26,7 +26,7 @@ func (pg *postgres) InsertLeader(leader *model.Leader, league int16) error {
 	}
 
 	// добавляем лидера в бд
-	_, err = pg.pool.Exec(context.Background(), query, args...)
+	_, err = pg.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}

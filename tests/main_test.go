@@ -48,7 +48,8 @@ func (s *ApiSuite) SetupSuite() {
 // Устанавливает соединение с базой данных.
 func (s *ApiSuite) initApp() {
 	var err error
-	s.a, err = app.NewApp(context.Background())
+	ctx := context.Background()
+	s.a, err = app.NewApp(ctx)
 	if err != nil {
 		s.FailNow("failed to initialize the application")
 	}
@@ -56,37 +57,39 @@ func (s *ApiSuite) initApp() {
 
 // populateDB заполняет тестовую базу данных тестовыми данными.
 func (s *ApiSuite) populateDB() {
+	ctx := context.Background()
+
 	// добавляем пользователей в бд
 	for _, user := range users {
-		if _, err := s.a.ServiceProvider().DB(context.Background()).InsertUser(user.Id, user.Firstname); err != nil {
+		if _, err := s.a.ServiceProvider().DB(ctx).InsertUser(ctx, user.Id, user.Firstname); err != nil {
 			s.FailNow("failed to insert user", err)
 		}
 	}
 
 	// добавляем задания
 	for _, task := range tasks {
-		if _, err := s.a.ServiceProvider().DB(context.Background()).InsertTask(task); err != nil {
+		if _, err := s.a.ServiceProvider().DB(ctx).InsertTask(ctx, task); err != nil {
 			s.FailNow("failed to insert task", err)
 		}
 	}
 
 	// добавляем выполненные задания
 	for _, completedTask := range completedTasks[adminId] {
-		if err := s.a.ServiceProvider().DB(context.Background()).
-			InsertCompletedTask(adminId, completedTask); err != nil {
+		if err := s.a.ServiceProvider().DB(ctx).
+			InsertCompletedTask(ctx, adminId, completedTask); err != nil {
 			s.FailNow("failed to insert completed task", err)
 		}
 	}
 
 	// добавляем лидеров
 	for _, leader := range leaders[3] {
-		if err := s.a.ServiceProvider().DB(context.Background()).InsertLeader(leader, 3); err != nil {
+		if err := s.a.ServiceProvider().DB(ctx).InsertLeader(ctx, leader, 3); err != nil {
 			s.FailNow("failed to insert leader", err)
 		}
 	}
 
 	// добавляем администратора
-	if err := s.a.ServiceProvider().DB(context.Background()).InsertAdmin(adminId); err != nil {
+	if err := s.a.ServiceProvider().DB(ctx).InsertAdmin(ctx, adminId); err != nil {
 		s.FailNow("failed to insert admin", err)
 	}
 }

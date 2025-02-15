@@ -17,9 +17,12 @@ import (
 // В результате выполнения функции на клиент отправляется
 // статус выполнения запроса.
 func DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
+	// получаем контекст запроса
+	ctx := r.Context()
+
 	// получаем реализацию интерфейса Repository из контекста.
 	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
-	db, ok := r.Context().Value("db").(repository.Repository)
+	db, ok := ctx.Value("db").(repository.Repository)
 	if !ok {
 		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
 		logger.Warn("get_user.go/DeleteTaskHandler - error while getting database from context")
@@ -35,7 +38,7 @@ func DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// удаляем задание из базы данных
-	err = db.DeleteTask(taskToDelete.Id)
+	err = db.DeleteTask(ctx, taskToDelete.Id)
 	if err != nil {
 		http.Error(w, "failed to delete task", http.StatusInternalServerError)
 		logger.Warn("delete_task.go/DeleteTaskHandler - error while deleting task id: ", err)

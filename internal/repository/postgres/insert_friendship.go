@@ -8,12 +8,13 @@ import (
 // InsertFriendship создаёт новую дружбу в бд
 // и увеличивает счётчик друзей у приглашающего пользователя.
 //
-// Принимает на вход два параметра: id приглашённого и
-// id приглашающего пользователей.
+// Входными параметрами метода являются контекст,
+// идентификатор приглашённого пользователя и
+// идентификатор приглашающего пользователя.
 //
 // Метод возвращает ошибку, если она возникла,
 // в противном случае вместо неё будет возвращён nil.
-func (pg *postgres) InsertFriendship(invitedUserId int64, invitingUserId int64) error {
+func (pg *postgres) InsertFriendship(ctx context.Context, invitedUserId int64, invitingUserId int64) error {
 	// создаём sql запрос
 	query, args, err := sq.Insert("friends").
 		PlaceholderFormat(sq.Dollar).
@@ -25,7 +26,7 @@ func (pg *postgres) InsertFriendship(invitedUserId int64, invitingUserId int64) 
 	}
 
 	// создаём запись дружбы в таблице friends
-	_, err = pg.pool.Exec(context.Background(), query, args...)
+	_, err = pg.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -41,7 +42,7 @@ func (pg *postgres) InsertFriendship(invitedUserId int64, invitingUserId int64) 
 	}
 
 	// увеличиваем счётчик друзей у приглашающего на единицу
-	_, err = pg.pool.Exec(context.Background(), query, args...)
+	_, err = pg.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}

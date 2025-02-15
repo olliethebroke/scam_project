@@ -8,13 +8,13 @@ import (
 
 // UpdateUser обновляет данные о пользователе в бд.
 //
-// Входными параметрами метода являются id пользователя
-// и указатель на тип Update.
+// Входными параметрами метода являются контекст,
+// идентификатор пользователя и указатель на тип Update.
 //
 // Выходниым параметром метода является ошибка, если
 // она возникла, в противном случае вместо неё будет
 // возвращён nil.
-func (pg *postgres) UpdateUser(id int64, update *model.Update) error {
+func (pg *postgres) UpdateUser(ctx context.Context, id int64, update *model.Update) error {
 	// создаём sql запрос
 	query, args, err := sq.Update("users").
 		PlaceholderFormat(sq.Dollar).
@@ -27,7 +27,7 @@ func (pg *postgres) UpdateUser(id int64, update *model.Update) error {
 	}
 
 	// обновляем нужные поля
-	_, err = pg.pool.Exec(context.Background(), query, args...)
+	_, err = pg.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}

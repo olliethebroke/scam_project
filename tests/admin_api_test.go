@@ -15,6 +15,7 @@ import (
 // создания нового задания.
 func (s *ApiSuite) TestCreateTaskHandler() {
 	r := s.Require()
+	ctx := context.Background()
 
 	// формируем структуру-тело запроса
 	createTaskRequest := &modelAPI.CreateTaskRequest{
@@ -38,7 +39,7 @@ func (s *ApiSuite) TestCreateTaskHandler() {
 	resp := httptest.NewRecorder()
 
 	// создаём и инициализируем указатель на маршрутизатор
-	router := s.a.Router(context.Background())
+	router := s.a.Router(ctx)
 
 	// маршрутизатор должен обработать запрос
 	router.ServeHTTP(resp, req)
@@ -53,7 +54,7 @@ func (s *ApiSuite) TestCreateTaskHandler() {
 
 	// делаем запрос в бд, чтобы считать созданное задание
 	// в ответе не должно быть ошибки
-	createdTask, err := s.a.ServiceProvider().DB(context.Background()).SelectTask(createTaskResponse.Id)
+	createdTask, err := s.a.ServiceProvider().DB(ctx).SelectTask(ctx, createTaskResponse.Id)
 	r.NoError(err)
 
 	// проверяем поля, отправленные в бд
@@ -72,9 +73,10 @@ func (s *ApiSuite) TestCreateTaskHandler() {
 // удаления задания по id.
 func (s *ApiSuite) TestDeleteTaskHandler() {
 	r := s.Require()
+	ctx := context.Background()
 
 	// считываем все задания из бд
-	existingTasks, err := s.a.ServiceProvider().DB(context.Background()).SelectTasks()
+	existingTasks, err := s.a.ServiceProvider().DB(ctx).SelectTasks(ctx)
 	r.NoError(err)
 
 	idToDelete := existingTasks[0].Id
@@ -97,7 +99,7 @@ func (s *ApiSuite) TestDeleteTaskHandler() {
 	resp := httptest.NewRecorder()
 
 	// создаём и инициализируем указатель на маршрутизатор
-	router := s.a.Router(context.Background())
+	router := s.a.Router(ctx)
 
 	// маршрутизатор должен обработать запрос
 	router.ServeHTTP(resp, req)
@@ -106,7 +108,7 @@ func (s *ApiSuite) TestDeleteTaskHandler() {
 	r.Equal(http.StatusOK, resp.Result().StatusCode)
 
 	// считываем все задания из бд
-	existingTasks, err = s.a.ServiceProvider().DB(context.Background()).SelectTasks()
+	existingTasks, err = s.a.ServiceProvider().DB(ctx).SelectTasks(ctx)
 	r.NoError(err)
 
 	// если удалённое задание осталось в бд,
@@ -125,13 +127,14 @@ func (s *ApiSuite) TestDeleteTaskHandler() {
 // удаления пользователя по id.
 func (s *ApiSuite) TestDeleteUserHandler() {
 	r := s.Require()
+	ctx := context.Background()
 
 	// удаляем первого пользователя
 	idToDelete := users[0].Id
 
 	// проверяем наличие пользователя в бд
 	// в ответе не должно быть ошибки
-	_, err := s.a.ServiceProvider().DB(context.Background()).SelectUser(idToDelete)
+	_, err := s.a.ServiceProvider().DB(ctx).SelectUser(ctx, idToDelete)
 	r.NoError(err)
 
 	// формируем структуру-тело запроса
@@ -151,7 +154,7 @@ func (s *ApiSuite) TestDeleteUserHandler() {
 	resp := httptest.NewRecorder()
 
 	// создаём и инициализируем указатель на маршрутизатор
-	router := s.a.Router(context.Background())
+	router := s.a.Router(ctx)
 
 	// маршрутизатор должен обработать запрос
 	router.ServeHTTP(resp, req)
@@ -161,7 +164,7 @@ func (s *ApiSuite) TestDeleteUserHandler() {
 
 	// делаем запрос в бд, чтобы считать удалённого пользователя
 	// в ответе должна быть ошибка
-	_, err = s.a.ServiceProvider().DB(context.Background()).SelectUser(deleteUserRequest.Id)
+	_, err = s.a.ServiceProvider().DB(ctx).SelectUser(ctx, deleteUserRequest.Id)
 	r.Error(err)
 
 	// удаляем первого пользователя из слайса
@@ -172,6 +175,7 @@ func (s *ApiSuite) TestDeleteUserHandler() {
 // получения всех заданий.
 func (s *ApiSuite) TestGetTasksHandler() {
 	r := s.Require()
+	ctx := context.Background()
 
 	// создаём запрос
 	req, _ := http.NewRequest("GET", app.AdminGetTasksPostfix, nil)
@@ -181,7 +185,7 @@ func (s *ApiSuite) TestGetTasksHandler() {
 	resp := httptest.NewRecorder()
 
 	// создаём и инициализируем указатель на маршрутизатор
-	router := s.a.Router(context.Background())
+	router := s.a.Router(ctx)
 
 	// маршрутизатор должен обработать запрос
 	router.ServeHTTP(resp, req)

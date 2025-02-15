@@ -8,13 +8,13 @@ import (
 
 // SelectUserRole считывает информацию о роли пользователя.
 //
-// Метод на вход принимает id пользователя, чью роль необходимо
+// Метод на вход принимает контекст и id пользователя, чью роль необходимо
 // считать.
 //
 // Выходными параметрами являются указатель на тип UserRole
 // и ошибка, если она возникла,
 // в противном случае вместо неё будет возращён nil.
-func (pg *postgres) SelectUserRole(id int64) (*model.UserRole, error) {
+func (pg *postgres) SelectUserRole(ctx context.Context, id int64) (*model.UserRole, error) {
 	// формируем sql запрос
 	query, args, err := sq.Select("role").
 		From("admins").
@@ -26,7 +26,7 @@ func (pg *postgres) SelectUserRole(id int64) (*model.UserRole, error) {
 	}
 	var role int16
 	// считываем роль пользователя из бд
-	err = pg.pool.QueryRow(context.Background(), query, args...).Scan(&role)
+	err = pg.pool.QueryRow(ctx, query, args...).Scan(&role)
 	if err != nil {
 		return nil, err
 	}

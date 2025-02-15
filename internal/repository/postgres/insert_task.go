@@ -10,12 +10,12 @@ import (
 // администратором задание в бд.
 //
 // В качестве входного параметра метод принимает
-// указатель на тип данных Task.
+// контекст и указатель на тип данных Task.
 //
 // Выходным параметром метода является ошибка,
 // если она возникла, в противном случае вместо
 // неё будет возвращён nil.
-func (pg *postgres) InsertTask(task *model.Task) (*model.Task, error) {
+func (pg *postgres) InsertTask(ctx context.Context, task *model.Task) (*model.Task, error) {
 	// создаём sql запрос
 	query, args, err := sq.Insert("tasks").
 		PlaceholderFormat(sq.Dollar).
@@ -29,7 +29,7 @@ func (pg *postgres) InsertTask(task *model.Task) (*model.Task, error) {
 
 	// добавляем задание в бд,
 	// считывая его сгенерированный id
-	err = pg.pool.QueryRow(context.Background(), query, args...).Scan(&task.Id)
+	err = pg.pool.QueryRow(ctx, query, args...).Scan(&task.Id)
 	if err != nil {
 		return nil, err
 	}

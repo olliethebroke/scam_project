@@ -2,7 +2,7 @@ package env
 
 import (
 	"crypto_scam/internal/config"
-	"crypto_scam/internal/utils/string_utils"
+	"crypto_scam/internal/utils/stringutils"
 	"errors"
 	"fmt"
 	"os"
@@ -46,13 +46,13 @@ func NewTgConfig() (*tgConfig, error) {
 			errors.New(fmt.Sprintf("tg.go/NewTgConfig - env variable %s not found", initDataExpName))
 	}
 	// парсим id в int64
-	id, err := string_utils.StringToInt64(chatId)
+	id, err := stringutils.StringToInt64(chatId)
 	if err != nil {
 		return nil,
 			errors.New(fmt.Sprintf("tg.go/NewTgConfig - env variable %s is not integer", tgChatIdName))
 	}
 	// парсим initDataExpStr в int64
-	initDataExp, err := string_utils.StringToInt64(initDataExpStr)
+	initDataExp, err := stringutils.StringToInt64(initDataExpStr)
 	if err != nil {
 		return nil,
 			errors.New(fmt.Sprintf("tg.go/NewTgConfig - env variable %s is not integer", initDataExpName))

@@ -8,10 +8,12 @@ import (
 
 // SelectTasks забирает из бд список заданий.
 //
+// Входным параметром метода является контекст.
+//
 // Метод возвращает слайс указателей на тип Task
 // и ошибку, если она возникла,
 // в противном случае вместо неё будет возвращён nil.
-func (pg *postgres) SelectTasks() ([]*model.Task, error) {
+func (pg *postgres) SelectTasks(ctx context.Context) ([]*model.Task, error) {
 	// создаём sql запрос на получение списка заданий
 	query, args, err := sq.Select("id", "description", "reward", "action_type", "action_data").
 		PlaceholderFormat(sq.Dollar).
@@ -22,7 +24,7 @@ func (pg *postgres) SelectTasks() ([]*model.Task, error) {
 	}
 
 	// получаем список всех заданий
-	rows, err := pg.pool.Query(context.Background(), query, args...)
+	rows, err := pg.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"crypto_scam/internal/repository/model"
 )
 
@@ -28,23 +29,23 @@ import (
 type Repository interface {
 	Close()
 
-	InsertUser(id int64, firstname string) (*model.User, error)
-	SelectUser(id int64) (*model.User, error)
-	SelectUserRole(id int64) (*model.UserRole, error)
-	UpdateUser(id int64, info *model.Update) error
-	DeleteUser(id int64) error
+	InsertUser(ctx context.Context, id int64, firstname string) (*model.User, error)
+	SelectUser(ctx context.Context, id int64) (*model.User, error)
+	SelectUserRole(ctx context.Context, id int64) (*model.UserRole, error)
+	UpdateUser(ctx context.Context, id int64, info *model.Update) error
+	DeleteUser(ctx context.Context, id int64) error
 
-	InsertLeader(leader *model.Leader, league int16) error
-	SelectLeaders() (map[int16][]*model.Leader, error)
+	InsertLeader(ctx context.Context, leader *model.Leader, league int16) error
+	SelectLeaders(ctx context.Context) (map[int16][]*model.Leader, error)
 
-	InsertTask(task *model.Task) (*model.Task, error)
-	InsertCompletedTask(userId int64, taskId int16) error
-	SelectTask(id int16) (*model.Task, error)
-	SelectTasks() ([]*model.Task, error)
-	SelectUserTasks(id int64) ([]*model.Task, error)
-	DeleteTask(id int16) error
+	InsertTask(ctx context.Context, task *model.Task) (*model.Task, error)
+	InsertCompletedTask(ctx context.Context, userId int64, taskId int16) error
+	SelectTask(ctx context.Context, id int16) (*model.Task, error)
+	SelectTasks(ctx context.Context) ([]*model.Task, error)
+	SelectUserTasks(ctx context.Context, id int64) ([]*model.Task, error)
+	DeleteTask(ctx context.Context, id int16) error
 
-	InsertFriendship(invitedUserId int64, invitingUserId int64) error
+	InsertFriendship(ctx context.Context, invitedUserId int64, invitingUserId int64) error
 
-	InsertAdmin(id int64) error
+	InsertAdmin(ctx context.Context, id int64) error
 }

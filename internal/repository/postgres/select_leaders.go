@@ -8,12 +8,14 @@ import (
 
 // SelectLeaders считывает данные о лидерах из бд.
 //
+// Входным параметром метода является контекст.
+//
 // В качестве выходных параметров возвращает мапу,
 // содержащую лиги в качестве ключей и слайс указателей
 // на тип данных Leader в качестве списка лидеров,
 // и ошибку, если она возникла, в противном случае
 // вместо неё будет возвращён nil.
-func (pg *postgres) SelectLeaders() (map[int16][]*model.Leader, error) {
+func (pg *postgres) SelectLeaders(ctx context.Context) (map[int16][]*model.Leader, error) {
 	// создаём sql запрос
 	query, args, err := sq.Select("id", "position", "firstname", "blocks", "league").
 		From("leaderboard").
@@ -25,7 +27,7 @@ func (pg *postgres) SelectLeaders() (map[int16][]*model.Leader, error) {
 	}
 
 	// выполняя запрос, получаем несколько массивов по 100 элементов
-	rows, err := pg.pool.Query(context.Background(), query, args...)
+	rows, err := pg.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

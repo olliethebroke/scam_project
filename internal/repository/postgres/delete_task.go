@@ -7,12 +7,13 @@ import (
 
 // DeleteTask удаляет задание из базы данных.
 //
-// Метод принимает id задания, которое нужно удалить.
+// Метод принимает контекст и
+// id задания, которое нужно удалить.
 //
 // Выходным параметром метода является ошибка,
 // если она возникла, в противном случае вместо
 // неё будет возвращён nil.
-func (pg *postgres) DeleteTask(id int16) error {
+func (pg *postgres) DeleteTask(ctx context.Context, id int16) error {
 	// создаём sql запрос на удаление нужного задания из бд
 	query, args, err := sq.Delete("tasks").
 		PlaceholderFormat(sq.Dollar).
@@ -23,7 +24,7 @@ func (pg *postgres) DeleteTask(id int16) error {
 	}
 
 	// удаляем задание
-	_, err = pg.pool.Exec(context.Background(), query, args...)
+	_, err = pg.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}

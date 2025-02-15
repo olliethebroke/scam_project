@@ -17,9 +17,12 @@ import (
 // В результате выполнения функции на клиент отправляется
 // статус выполнения запроса.
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	// получаем контекст запроса
+	ctx := r.Context()
+
 	// получаем реализацию интерфейса Repository из контекста.
 	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
-	db, ok := r.Context().Value("db").(repository.Repository)
+	db, ok := ctx.Value("db").(repository.Repository)
 	if !ok {
 		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
 		logger.Warn("get_user.go/DeleteUserHandler - error while getting database from context")
@@ -34,7 +37,7 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// удаляем пользователя из бд
-	err = db.DeleteUser(userToDelete.Id)
+	err = db.DeleteUser(ctx, userToDelete.Id)
 	if err != nil {
 		http.Error(w, "failed to delete user", http.StatusInternalServerError)
 		logger.Warn("delete_user.go/DeleteUserHandler - error while deleting user: ", err)

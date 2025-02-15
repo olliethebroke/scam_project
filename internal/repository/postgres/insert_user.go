@@ -15,7 +15,7 @@ import (
 // Выходными параметрами является указатель на тип User
 // и ошибка, если она возникла, в противном случае
 // вместо неё будет возвращён nil.
-func (pg *postgres) InsertUser(id int64, firstname string) (*model.User, error) {
+func (pg *postgres) InsertUser(ctx context.Context, id int64, firstname string) (*model.User, error) {
 	// проверяем, есть ли пользователь в приватке
 	isPremium, err := telegram.IfChatMember(int(id))
 	if err != nil {
@@ -33,7 +33,7 @@ func (pg *postgres) InsertUser(id int64, firstname string) (*model.User, error) 
 	}
 
 	// вносим пользователя в бд
-	_, err = pg.pool.Exec(context.Background(), query, args...)
+	_, err = pg.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

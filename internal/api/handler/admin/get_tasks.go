@@ -14,16 +14,20 @@ import (
 // данными о всех игровых заданиях, представленными
 // структурой GetTasksResponse.
 func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
+	// получаем контекст запроса
+	ctx := r.Context()
+
 	// получаем реализацию интерфейса Repository из контекста.
 	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
-	db, ok := r.Context().Value("db").(repository.Repository)
+	db, ok := ctx.Value("db").(repository.Repository)
 	if !ok {
 		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
 		logger.Warn("get_user.go/GetTasksHandler - error while getting database from context")
 		return
 	}
+
 	// получаем из базы данных задания
-	tasks, err := db.SelectTasks()
+	tasks, err := db.SelectTasks(ctx)
 	if err != nil {
 		http.Error(w, "failed to get tasks", http.StatusNotFound)
 		logger.Warn("get_tasks.go/GetTasksHandler - error while selecting tasks: ", err)

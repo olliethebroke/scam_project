@@ -20,9 +20,12 @@ import (
 // В результате выполнения функции на клиент отправляется
 // статус выполнения запроса.
 func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
+	// получаем контекст запроса
+	ctx := r.Context()
+
 	// получаем реализацию интерфейса Repository из контекста.
 	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
-	db, ok := r.Context().Value("db").(repository.Repository)
+	db, ok := ctx.Value("db").(repository.Repository)
 	if !ok {
 		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
 		logger.Warn("get_user.go/CreateTaskHandler - error while getting database from context")
@@ -38,7 +41,7 @@ func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// добавляем полученное задание в бд
-	createdTask, err := db.InsertTask(converter.CreateTaskRequestToTask(taskToCreate))
+	createdTask, err := db.InsertTask(ctx, converter.CreateTaskRequestToTask(taskToCreate))
 	if err != nil {
 		http.Error(w, "failed to create task", http.StatusInternalServerError)
 		logger.Warn("handler.go/CreateTaskHandler - error while inserting task: ", err)

@@ -7,8 +7,10 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	// инициализируем зависимости для работы приложения
-	a, err := app.NewApp(context.Background())
+	a, err := app.NewApp(ctx)
 	if err != nil {
 		logger.Fatal("failed to initialize application: ", err)
 	}

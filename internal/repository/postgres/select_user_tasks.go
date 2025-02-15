@@ -9,13 +9,13 @@ import (
 
 // SelectUserTasks считывает из бд массив заданий пользователя по его id.
 //
-// Входными параметрами метода является id пользовталя,
+// Входными параметрами метода является контекст и id пользовталя,
 // задания которого необходимо считать.
 //
 // Выходными параметрами метода являются слайс указателей
 // на тип User и ошибка, если она возникла,
 // в противном случае вместо неё будет возращён nil.
-func (pg *postgres) SelectUserTasks(id int64) ([]*model.Task, error) {
+func (pg *postgres) SelectUserTasks(ctx context.Context, id int64) ([]*model.Task, error) {
 	// создаём sql запрос на получение выполненных пользователем заданий
 	query, args, err := sq.Select("task_id").
 		PlaceholderFormat(sq.Dollar).
@@ -27,7 +27,7 @@ func (pg *postgres) SelectUserTasks(id int64) ([]*model.Task, error) {
 	}
 
 	// получаем список выполненных заданий пользователя
-	rows, err := pg.pool.Query(context.Background(), query, args...)
+	rows, err := pg.pool.Query(ctx, query, args...)
 
 	// создаём слайс выполненных заданий
 	completedTasks := make([]int16, 0, 6)
@@ -57,7 +57,7 @@ func (pg *postgres) SelectUserTasks(id int64) ([]*model.Task, error) {
 	}
 
 	// получаем список всех заданий
-	rows, err = pg.pool.Query(context.Background(), query, args...)
+	rows, err = pg.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

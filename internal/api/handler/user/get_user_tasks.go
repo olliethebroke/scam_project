@@ -18,9 +18,12 @@ import (
 // данными о заданиях конкретного пользователя,
 // представленными структурой GetUserTasksResponse.
 func GetUserTasksHandler(w http.ResponseWriter, r *http.Request) {
+	// получаем контекст запроса
+	ctx := r.Context()
+
 	// получаем реализацию интерфейса Repository из контекста.
 	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
-	db, ok := r.Context().Value("db").(repository.Repository)
+	db, ok := ctx.Value("db").(repository.Repository)
 	if !ok {
 		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
 		logger.Warn("get_user.go/GetUserTasksHandler - error while getting database from context")
@@ -28,7 +31,7 @@ func GetUserTasksHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// получаем id пользователя из контекста.
 	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
-	id, ok := r.Context().Value("id").(int64)
+	id, ok := ctx.Value("id").(int64)
 	if !ok {
 		http.Error(w, "failed to get user id", http.StatusInternalServerError)
 		logger.Warn("get_user.go/GetUserTasksHandler - error while getting user id from context")
@@ -36,7 +39,7 @@ func GetUserTasksHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// получаем задания из бд
-	tasks, err := db.SelectUserTasks(id)
+	tasks, err := db.SelectUserTasks(ctx, id)
 	if err != nil {
 		http.Error(w, "failed to get user tasks", http.StatusInternalServerError)
 		logger.Warn("handler.go/GetUserTasksHandler - error while selecting tasks: ", err)

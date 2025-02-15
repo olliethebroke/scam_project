@@ -20,9 +20,12 @@ import (
 // В результате выполнения функции на клиент отправляется
 // статус выполнения запроса.
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	// получаем контекст запроса
+	ctx := r.Context()
+
 	// получаем реализацию интерфейса Repository из контекста.
 	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
-	db, ok := r.Context().Value("db").(repository.Repository)
+	db, ok := ctx.Value("db").(repository.Repository)
 	if !ok {
 		http.Error(w, "failed to get database from context", http.StatusInternalServerError)
 		logger.Warn("get_user.go/UpdateUserHandler - error while getting database from context")
@@ -30,7 +33,7 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// получаем id пользователя из контекста.
 	// если значение отсутствует или имеет неверный тип, возвращаем ошибку 500.
-	id, ok := r.Context().Value("id").(int64)
+	id, ok := ctx.Value("id").(int64)
 	if !ok {
 		http.Error(w, "failed to get user id", http.StatusInternalServerError)
 		logger.Warn("get_user.go/UpdateUserHandler - error while getting user id from context")
@@ -46,7 +49,7 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// обновляем данные в бд
-	err := db.UpdateUser(id, converter.UpdateUserRequestToUpdateUser(dataToUpdate))
+	err := db.UpdateUser(ctx, id, converter.UpdateUserRequestToUpdateUser(dataToUpdate))
 	if err != nil {
 		http.Error(w, "failed to update user", http.StatusInternalServerError)
 		logger.Warn("handler.go/UpdateUserHandler - error while updating user: ", err)
