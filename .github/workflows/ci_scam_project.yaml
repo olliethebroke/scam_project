@@ -44,6 +44,7 @@ jobs:
           echo "PLATFORM=linux/amd64" >> prod.env
           echo "TG_BOT_TOKEN=${{ secrets.TG_BOT_TOKEN }}" >> prod.env
           echo "TG_CHAT_ID=${{ secrets.TG_CHAT_ID }}" >> prod.env
+          echo "INIT_DATA_EXP_TIME=30" >> prod.env
 
       - name: Login to Docker Registry
         run: docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
